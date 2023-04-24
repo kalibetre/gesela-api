@@ -9,7 +9,6 @@ public abstract class BaseModel {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(columnDefinition = "BINARY(16)")
 	private UUID uuid;
 
 	public UUID getUuid() {
