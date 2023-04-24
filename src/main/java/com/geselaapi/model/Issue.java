@@ -12,6 +12,7 @@ public class Issue extends BaseModel{
     @Column(nullable = false)
     private String title;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(nullable = false)

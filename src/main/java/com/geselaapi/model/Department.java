@@ -12,6 +12,7 @@ public class Department extends BaseModel{
     @Column(nullable = false)
     private String name;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     private List<Employee> employees;
