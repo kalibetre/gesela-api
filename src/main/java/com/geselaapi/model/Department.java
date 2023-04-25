@@ -4,8 +4,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
-import java.util.List;
-
 @Entity
 @Table(name = "departments")
 public class Department extends BaseModel{
@@ -14,8 +12,6 @@ public class Department extends BaseModel{
 
     @Column(columnDefinition = "TEXT")
     private String description;
-
-    private List<Employee> employees;
 
     public String getName() {
         return name;
@@ -33,11 +29,4 @@ public class Department extends BaseModel{
         this.description = description;
     }
 
-    public List<Employee> getEmployees() {
-        return employees;
-    }
-
-    public void setEmployees(List<Employee> employees) {
-        this.employees = employees;
-    }
 }
