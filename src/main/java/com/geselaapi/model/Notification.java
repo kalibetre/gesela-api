@@ -7,9 +7,13 @@ import jakarta.persistence.*;
 public class Notification extends BaseModel{
     @Column(nullable = false)
     private String message;
-    @Column(nullable = false)
+
+    @ManyToOne
+    @JoinColumn(name = "from_user_uuid", nullable = false)
     private User fromUser;
-    @Column(nullable = false)
+
+    @ManyToOne
+    @JoinColumn(name = "to_user_uuid", nullable = false)
     private User toUser;
 
     @ManyToOne
