@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "issues")
@@ -31,8 +30,6 @@ public class Issue extends BaseModel{
     @ManyToOne
     @JoinColumn(name = "handler_uuid")
     private Employee handler;
-
-    private List<Notification> notifications;
 
     public Employee getHandler() {
         return handler;
@@ -95,11 +92,4 @@ public class Issue extends BaseModel{
         this.customer = customer;
     }
 
-    public List<Notification> getNotifications() {
-        return notifications;
-    }
-
-    public void setNotifications(List<Notification> notifications) {
-        this.notifications = notifications;
-    }
 }
