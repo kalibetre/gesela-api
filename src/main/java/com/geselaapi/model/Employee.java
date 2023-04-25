@@ -3,6 +3,7 @@ package com.geselaapi.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "employees")
@@ -19,6 +20,8 @@ public class Employee extends  BaseModel{
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_account_uuid")
     private User userAccount;
+
+    private List<Issue> issues;
 
     public Employee() {
         this.isArchived = false;
@@ -62,5 +65,13 @@ public class Employee extends  BaseModel{
 
     public void setUserAccount(User userAccount) {
         this.userAccount = userAccount;
+    }
+
+    public List<Issue> getIssues() {
+        return issues;
+    }
+
+    public void setIssues(List<Issue> issues) {
+        this.issues = issues;
     }
 }

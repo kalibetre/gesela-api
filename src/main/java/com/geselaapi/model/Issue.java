@@ -28,7 +28,19 @@ public class Issue extends BaseModel{
     @JoinColumn(name = "customer_uuid")
     private Customer customer;
 
+    @ManyToOne
+    @JoinColumn(name = "handler_uuid")
+    private Employee handler;
+
     private List<Notification> notifications;
+
+    public Employee getHandler() {
+        return handler;
+    }
+
+    public void setHandler(Employee handler) {
+        this.handler = handler;
+    }
 
     public Issue() {
         this.status = IssueStatus.DRAFT;
