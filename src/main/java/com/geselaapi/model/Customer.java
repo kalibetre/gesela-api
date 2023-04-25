@@ -10,7 +10,7 @@ public class Customer extends BaseModel {
 	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "user_account_uuid")
 	private User userAccount;
-	private List<Issue> issues;
+
 	public Customer() {
 		this.accountStatus = AccountStatus.ACTIVE;
 	}
@@ -31,11 +31,4 @@ public class Customer extends BaseModel {
 		this.userAccount = userAccount;
 	}
 
-	public List<Issue> getIssues() {
-		return issues;
-	}
-
-	public void setIssues(List<Issue> issues) {
-		this.issues = issues;
-	}
 }
