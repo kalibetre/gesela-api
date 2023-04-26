@@ -1,7 +1,6 @@
 package com.geselaapi.model;
 
 import jakarta.persistence.*;
-import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
@@ -17,7 +16,6 @@ public class Issue extends BaseModel{
     @Column(nullable = false)
     private IssueStatus status;
 
-    @CreatedDate
     private LocalDateTime createdDate;
 
     @Column(nullable = false)
@@ -30,6 +28,11 @@ public class Issue extends BaseModel{
     @ManyToOne
     @JoinColumn(name = "handler_uuid")
     private Employee handler;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdDate = LocalDateTime.now();
+    }
 
     public Employee getHandler() {
         return handler;
