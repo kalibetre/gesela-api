@@ -2,6 +2,8 @@ package com.geselaapi.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "notifications")
 public class Notification extends BaseModel{
@@ -19,6 +21,13 @@ public class Notification extends BaseModel{
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "issue_uuid")
     private Issue issue;
+
+    private LocalDateTime timeStamp;
+
+    @PrePersist
+    public void prePersist() {
+        this.timeStamp = LocalDateTime.now();
+    }
 
     public String getMessage() {
         return message;
