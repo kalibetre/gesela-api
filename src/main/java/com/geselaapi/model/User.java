@@ -1,5 +1,6 @@
 package com.geselaapi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -14,6 +15,7 @@ public class User extends BaseModel {
 	@Column(unique = true)
 	private String phone;
 	@Column(nullable = false)
+	@JsonIgnore
 	private String passwordHash;
 
 	public String getName() {
