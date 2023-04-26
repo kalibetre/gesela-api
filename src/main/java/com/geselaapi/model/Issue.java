@@ -25,7 +25,7 @@ public class Issue extends BaseModel{
     @JoinColumn(name = "customer_uuid")
     private Customer customer;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "handler_uuid")
     private Employee handler;
 

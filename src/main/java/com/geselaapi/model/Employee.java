@@ -7,7 +7,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "employees")
 public class Employee extends  BaseModel{
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "department_uuid")
     private Department department;
 
@@ -20,7 +20,7 @@ public class Employee extends  BaseModel{
     @Column(nullable = false)
     private Boolean isArchived;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "user_account_uuid")
     private User userAccount;
 

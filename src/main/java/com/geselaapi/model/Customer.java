@@ -1,13 +1,11 @@
 package com.geselaapi.model;
 import jakarta.persistence.*;
 
-import java.util.List;
-
 @Entity
 @Table(name = "customers")
 public class Customer extends BaseModel {
 	private AccountStatus accountStatus;
-	@OneToOne(cascade = CascadeType.ALL)
+	@OneToOne(cascade = CascadeType.MERGE)
 	@JoinColumn(name = "user_account_uuid")
 	private User userAccount;
 
