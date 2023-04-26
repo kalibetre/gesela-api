@@ -22,8 +22,8 @@ public class Issue extends BaseModel{
     private Boolean isArchived;
 
     @ManyToOne
-    @JoinColumn(name = "customer_uuid")
-    private Customer customer;
+    @JoinColumn(name = "user_uuid")
+    private User raisedBy;
 
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "handler_uuid")
@@ -87,12 +87,12 @@ public class Issue extends BaseModel{
         isArchived = archived;
     }
 
-    public Customer getCustomer() {
-        return customer;
+    public User getRaisedBy() {
+        return raisedBy;
     }
 
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
+    public void setRaisedBy(User raisedBy) {
+        this.raisedBy = raisedBy;
     }
 
 }
