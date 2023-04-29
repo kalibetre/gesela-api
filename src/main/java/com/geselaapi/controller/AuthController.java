@@ -2,7 +2,7 @@ package com.geselaapi.controller;
 
 import com.geselaapi.model.AuthRequest;
 import com.geselaapi.model.AuthResponse;
-import com.geselaapi.dto.UserDTO;
+import com.geselaapi.dto.UserRequestDTO;
 import com.geselaapi.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,7 +21,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(
-            @RequestBody UserDTO request
+            @RequestBody UserRequestDTO request
     ) {
         return ResponseEntity.ok(authService.register(request));
     }

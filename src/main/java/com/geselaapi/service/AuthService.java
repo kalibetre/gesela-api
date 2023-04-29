@@ -2,7 +2,7 @@ package com.geselaapi.service;
 
 import com.geselaapi.model.AuthRequest;
 import com.geselaapi.model.AuthResponse;
-import com.geselaapi.dto.UserDTO;
+import com.geselaapi.dto.UserRequestDTO;
 import com.geselaapi.model.User;
 import com.geselaapi.model.UserRole;
 import com.geselaapi.repository.UserRepository;
@@ -25,7 +25,7 @@ public class AuthService {
         this.authManager = authManager;
     }
 
-    public AuthResponse register(UserDTO userData) {
+    public AuthResponse register(UserRequestDTO userData) {
         User user = new User();
         user.setName(userData.getName());
         user.setEmail(userData.getEmail());

@@ -1,6 +1,6 @@
 package com.geselaapi.dto;
 
-public class UserDTO {
+public class UserRequestDTO {
     private String name;
     private String email;
     private String phone;
