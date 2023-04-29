@@ -27,18 +27,18 @@ public class Issue extends BaseModel{
 
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "handler_uuid")
-    private Employee handler;
+    private User handler;
 
     @PrePersist
     public void prePersist() {
         this.createdDate = LocalDateTime.now();
     }
 
-    public Employee getHandler() {
+    public User getHandler() {
         return handler;
     }
 
-    public void setHandler(Employee handler) {
+    public void setHandler(User handler) {
         this.handler = handler;
     }
 
