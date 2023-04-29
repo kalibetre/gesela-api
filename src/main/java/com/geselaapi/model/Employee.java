@@ -6,16 +6,13 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "employees")
-public class Employee extends  BaseModel{
+public class Employee extends  BaseModel {
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "department_uuid")
     private Department department;
 
     @Column(nullable = false)
     private LocalDate hireDate;
-
-    @Column(nullable = false)
-    private EmployeeRole role;
 
     @Column(nullable = false)
     private Boolean isArchived;
@@ -42,14 +39,6 @@ public class Employee extends  BaseModel{
 
     public void setHireDate(LocalDate hireDate) {
         this.hireDate = hireDate;
-    }
-
-    public EmployeeRole getRole() {
-        return role;
-    }
-
-    public void setRole(EmployeeRole role) {
-        this.role = role;
     }
 
     public Boolean getArchived() {

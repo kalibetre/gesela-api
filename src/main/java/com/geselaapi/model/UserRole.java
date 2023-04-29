@@ -1,7 +1,8 @@
 package com.geselaapi.model;
 
-public enum EmployeeRole {
+public enum UserRole {
     ADMIN,
     ISSUE_MANAGER,
-    ISSUE_HANDLER
+    ISSUE_HANDLER,
+    DEFAULT,
 }

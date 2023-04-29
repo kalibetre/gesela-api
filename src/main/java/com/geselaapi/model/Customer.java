@@ -27,6 +27,7 @@ public class Customer extends BaseModel {
 
 	public void setUserAccount(User userAccount) {
 		this.userAccount = userAccount;
+		this.userAccount.setRole(UserRole.DEFAULT);
 	}
 
 }
