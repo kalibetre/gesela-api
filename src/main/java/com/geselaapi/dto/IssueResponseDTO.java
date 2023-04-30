@@ -22,7 +22,7 @@ public class IssueResponseDTO extends IssueRequestDTO {
         responseDTO.setStatus(issue.getStatus());
         responseDTO.setCreatedDate(issue.getCreatedDate());
         responseDTO.setArchived(issue.getArchived());
-        responseDTO.setRaisedBy(UserResponseDTO.from(issue.getRaisedBy()));
+        responseDTO.setRaisedBy(UserResponseDTO.from(issue.getUser()));
         responseDTO.setHandler(UserResponseDTO.from(issue.getHandler()));
         return responseDTO;
     }
