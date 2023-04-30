@@ -1,5 +1,6 @@
 package com.geselaapi.dto;
 
+import com.geselaapi.model.Employee;
 import com.geselaapi.model.User;
 
 import java.util.UUID;
@@ -17,6 +18,10 @@ public class UserResponseDTO {
         responseDTO.setEmail(user.getEmail());
         responseDTO.setPhone(user.getPhone());
         return responseDTO;
+    }
+
+    public static UserResponseDTO from(Employee employee) {
+        return from(employee.getUserAccount());
     }
 
     public UUID getUuid() {
