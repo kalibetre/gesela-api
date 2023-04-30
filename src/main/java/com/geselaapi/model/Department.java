@@ -8,7 +8,7 @@ import java.util.List;
 @Entity
 @Table(name = "departments")
 public class Department extends BaseModel{
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
     @Column(columnDefinition = "TEXT")
