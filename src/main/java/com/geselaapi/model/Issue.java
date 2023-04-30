@@ -3,6 +3,9 @@ package com.geselaapi.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Entity
 @Table(name = "issues")
@@ -22,24 +25,17 @@ public class Issue extends BaseModel{
     private Boolean isArchived;
 
     @ManyToOne
-    @JoinColumn(name = "user_uuid")
-    private User raisedBy;
+    private User user;
 
-    @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "handler_uuid")
-    private User handler;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    private final List<Notification> notifications = new ArrayList<>();
+
+    @ManyToOne
+    private Employee handler;
 
     @PrePersist
     public void prePersist() {
         this.createdDate = LocalDateTime.now();
-    }
-
-    public User getHandler() {
-        return handler;
-    }
-
-    public void setHandler(User handler) {
-        this.handler = handler;
     }
 
     public Issue() {
@@ -87,12 +83,23 @@ public class Issue extends BaseModel{
         isArchived = archived;
     }
 
-    public User getRaisedBy() {
-        return raisedBy;
+    public List<Notification> getNotifications() {
+        return notifications;
     }
 
-    public void setRaisedBy(User raisedBy) {
-        this.raisedBy = raisedBy;
+    public User getUser() {
+        return user;
     }
 
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Employee getHandler() {
+        return handler;
+    }
+
+    public void setHandler(Employee handler) {
+        this.handler = handler;
+    }
 }

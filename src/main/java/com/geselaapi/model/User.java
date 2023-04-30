@@ -6,6 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -21,10 +22,12 @@ public class User extends BaseModel implements UserDetails {
 	@Column(nullable = false)
 	@JsonIgnore
 	private String password;
-
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
+
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+	private final List<Issue> raisedIssues = new ArrayList<>();
 
 	public String getName() {
 		return name;
@@ -95,5 +98,9 @@ public class User extends BaseModel implements UserDetails {
 	@Override
 	public boolean isEnabled() {
 		return true;
+	}
+
+	public List<Issue> getRaisedIssues() {
+		return raisedIssues;
 	}
 }

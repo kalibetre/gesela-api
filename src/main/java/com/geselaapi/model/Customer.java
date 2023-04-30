@@ -5,8 +5,8 @@ import jakarta.persistence.*;
 @Table(name = "customers")
 public class Customer extends BaseModel {
 	private AccountStatus accountStatus;
-	@OneToOne(cascade = CascadeType.MERGE)
-	@JoinColumn(name = "user_account_uuid")
+
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	private User userAccount;
 
 	public Customer() {
@@ -29,5 +29,4 @@ public class Customer extends BaseModel {
 		this.userAccount = userAccount;
 		this.userAccount.setRole(UserRole.DEFAULT);
 	}
-
 }

@@ -3,12 +3,13 @@ package com.geselaapi.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "employees")
 public class Employee extends  BaseModel {
-    @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "department_uuid")
+    @ManyToOne
     private Department department;
 
     @Column(nullable = false)
@@ -17,9 +18,12 @@ public class Employee extends  BaseModel {
     @Column(nullable = false)
     private Boolean isArchived;
 
-    @OneToOne(cascade = CascadeType.MERGE)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_account_uuid")
     private User userAccount;
+
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = false)
+    private final List<Issue> assignedIssues = new ArrayList<>();
 
     public Employee() {
         this.isArchived = false;
@@ -57,4 +61,7 @@ public class Employee extends  BaseModel {
         this.userAccount = userAccount;
     }
 
+    public List<Issue> getAssignedIssues() {
+        return assignedIssues;
+    }
 }

@@ -18,8 +18,7 @@ public class Notification extends BaseModel{
     @JoinColumn(name = "to_user_uuid", nullable = false)
     private User toUser;
 
-    @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "issue_uuid")
+    @ManyToOne
     private Issue issue;
 
     private LocalDateTime timeStamp;

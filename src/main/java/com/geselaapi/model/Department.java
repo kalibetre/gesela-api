@@ -1,8 +1,9 @@
 package com.geselaapi.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "departments")
@@ -12,6 +13,9 @@ public class Department extends BaseModel{
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    private final List<Employee> employees = new ArrayList<>();
 
     public String getName() {
         return name;
@@ -29,4 +33,7 @@ public class Department extends BaseModel{
         this.description = description;
     }
 
+    public List<Employee> getEmployees() {
+        return employees;
+    }
 }
