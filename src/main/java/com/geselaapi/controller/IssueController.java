@@ -37,7 +37,7 @@ public class IssueController {
         Issue issue = new Issue();
         issue.setTitle(issueRequestDTO.getTitle());
         issue.setDescription(issueRequestDTO.getDescription());
-        issue.setRaisedBy(userService.getAuthenticatedUser());
+        issue.setUser(userService.getAuthenticatedUser());
         Issue savedIssue = issueRepository.save(issue);
         return ResponseEntity.ok(IssueResponseDTO.from(savedIssue));
     }
@@ -46,11 +46,12 @@ public class IssueController {
     public ResponseEntity<List<IssueResponseDTO>> getIssues() {
         User user = userService.getAuthenticatedUser();
         if (user.getRole() == UserRole.DEFAULT) {
-            return ResponseEntity.ok(Converter.convertList(issueRepository.findByRaisedBy(user), IssueResponseDTO::from));
+            return ResponseEntity.ok(Converter.convertList(issueRepository.findByUser(user), IssueResponseDTO::from));
         }
         else if (user.getRole() == UserRole.ISSUE_HANDLER) {
-            var raised = issueRepository.findByRaisedBy(user);
-            raised.addAll(issueRepository.findByHandler(user));
+            var raised = issueRepository.findByUser(user);
+            var employee = employeeRepository.findByUserAccount(user).orElse(null);
+            raised.addAll(issueRepository.findByHandler(employee));
             return ResponseEntity.ok(Converter.convertList(raised, IssueResponseDTO::from));
         }
         return ResponseEntity.ok(Converter.convertList(issueRepository.findAll(), IssueResponseDTO::from));
@@ -63,7 +64,7 @@ public class IssueController {
         if (issue == null) {
             return ResponseEntity.notFound().build();
         } else if (List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole())
-           || (List.of(issue.getRaisedBy().getUuid(), issue.getHandler().getUuid()).contains(user.getUuid())))
+           || (List.of(issue.getUser().getUuid(), issue.getHandler().getUuid()).contains(user.getUuid())))
             return ResponseEntity.ok(IssueResponseDTO.from(issue));
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
@@ -75,7 +76,7 @@ public class IssueController {
         if (issue == null) {
             return ResponseEntity.notFound().build();
         } else if (List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole())
-                || (List.of(issue.getRaisedBy().getUuid(), issue.getHandler().getUuid()).contains(user.getUuid())))
+                || (List.of(issue.getUser().getUuid(), issue.getHandler().getUuid()).contains(user.getUuid())))
         {
             issue.setTitle(issueRequestDTO.getTitle());
             issue.setDescription(issueRequestDTO.getDescription());
@@ -92,7 +93,7 @@ public class IssueController {
         if (issue == null) {
             return ResponseEntity.notFound().build();
         } else if (List.of(UserRole.ISSUE_MANAGER, UserRole.ISSUE_HANDLER).contains(user.getRole())
-                || (List.of(issue.getRaisedBy().getUuid(), issue.getHandler().getUuid()).contains(user.getUuid())))
+                || (List.of(issue.getUser().getUuid(), issue.getHandler().getUuid()).contains(user.getUuid())))
         {
             issue.setStatus(status);
             issueRepository.save(issue);
@@ -107,7 +108,7 @@ public class IssueController {
         Issue issue = issueRepository.findById(id).orElse(null);
         if (issue == null) {
             return ResponseEntity.notFound().build();
-        } else if (issue.getRaisedBy().getUuid() == user.getUuid())
+        } else if (issue.getUser().getUuid() == user.getUuid())
         {
             issue.setStatus(IssueStatus.PENDING);
             issueRepository.save(issue);
@@ -160,7 +161,7 @@ public class IssueController {
             return ResponseEntity.badRequest().build();
         else if (List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole()))
         {
-            issue.setHandler(handler.getUserAccount());
+            issue.setHandler(handler);
             issueRepository.save(issue);
             return ResponseEntity.ok(IssueResponseDTO.from(issue));
         }
