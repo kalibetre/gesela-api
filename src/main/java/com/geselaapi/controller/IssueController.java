@@ -2,6 +2,7 @@ package com.geselaapi.controller;
 
 import com.geselaapi.dto.IssueRequestDTO;
 import com.geselaapi.dto.IssueResponseDTO;
+import com.geselaapi.dto.IssueUpdateDTO;
 import com.geselaapi.model.*;
 import com.geselaapi.repository.EmployeeRepository;
 import com.geselaapi.repository.IssueRepository;
@@ -70,32 +71,30 @@ public class IssueController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<IssueResponseDTO> updateIssue(@PathVariable UUID id, @RequestBody IssueRequestDTO issueRequestDTO) {
+    public ResponseEntity<?> updateIssue(@PathVariable UUID id, @Valid @RequestBody IssueUpdateDTO issueUpdate) {
         User user = userService.getAuthenticatedUser();
         Issue issue = issueRepository.findById(id).orElse(null);
         if (issue == null) {
-            return ResponseEntity.notFound().build();
-        } else if (List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole())
-                || (List.of(issue.getUser().getUuid(), issue.getHandler().getUuid()).contains(user.getUuid())))
-        {
-            issue.setTitle(issueRequestDTO.getTitle());
-            issue.setDescription(issueRequestDTO.getDescription());
-            issueRepository.save(issue);
-            return ResponseEntity.ok(IssueResponseDTO.from(issue));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Issue with the specified id not found");
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-    }
 
-    @PutMapping("/{id}/update-status")
-    public ResponseEntity<IssueResponseDTO> updateIssueStatus(@PathVariable UUID id, @PathVariable IssueStatus status) {
-        User user = userService.getAuthenticatedUser();
-        Issue issue = issueRepository.findById(id).orElse(null);
-        if (issue == null) {
-            return ResponseEntity.notFound().build();
-        } else if (List.of(UserRole.ISSUE_MANAGER, UserRole.ISSUE_HANDLER).contains(user.getRole())
-                || (List.of(issue.getUser().getUuid(), issue.getHandler().getUuid()).contains(user.getUuid())))
+        boolean canUpdate = false;
+        if (issue.getStatus() == IssueStatus.DRAFT && issue.getUser().getUuid() == user.getUuid())
+            canUpdate = true;
+        else if (List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole()))
+            canUpdate = true;
+        else if (issue.getHandler().getUuid() == user.getUuid())
+            canUpdate = true;
+
+        if (canUpdate)
         {
-            issue.setStatus(status);
+            if (issueUpdate.getTitle() != null)
+                issue.setTitle(issueUpdate.getTitle());
+            if (issueUpdate.getDescription() != null)
+                issue.setDescription(issueUpdate.getDescription());
+            if (issueUpdate.getStatus() != null)
+                issue.setStatus(issueUpdate.getStatus());
+
             issueRepository.save(issue);
             return ResponseEntity.ok(IssueResponseDTO.from(issue));
         }
@@ -103,12 +102,12 @@ public class IssueController {
     }
 
     @PutMapping("/{id}/submit")
-    public ResponseEntity<IssueResponseDTO> submitIssue(@PathVariable UUID id) {
+    public ResponseEntity<?> submitIssue(@PathVariable UUID id) {
         User user = userService.getAuthenticatedUser();
         Issue issue = issueRepository.findById(id).orElse(null);
         if (issue == null) {
-            return ResponseEntity.notFound().build();
-        } else if (issue.getUser().getUuid() == user.getUuid())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Issue with the specified id not found");
+        } else if (issue.getUser().getUuid() == user.getUuid() || user.getRole() == UserRole.ADMIN)
         {
             issue.setStatus(IssueStatus.PENDING);
             issueRepository.save(issue);
