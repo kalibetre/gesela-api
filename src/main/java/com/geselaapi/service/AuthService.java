@@ -46,4 +46,10 @@ public class AuthService {
         String jwtToken = jwtService.generateToken(user.getUuid());
         return new AuthResponse(jwtToken);
     }
+
+    public void changePassword(String email, String password) {
+        User user = userRepository.findByEmail(email).orElseThrow();
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
+    }
 }
