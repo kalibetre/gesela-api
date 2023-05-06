@@ -1,15 +1,9 @@
 package com.geselaapi.dto;
 
-import jakarta.validation.constraints.NotBlank;
-
-public class UserRequestDTO {
-    @NotBlank
+public class UserUpdateDTO {
     private String name;
-    @NotBlank
     private String email;
-    @NotBlank
     private String phone;
-    @NotBlank
     private String password;
 
     public String getName() {
@@ -43,4 +37,5 @@ public class UserRequestDTO {
     public void setPassword(String password) {
         this.password = password;
     }
+
 }
