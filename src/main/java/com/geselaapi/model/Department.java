@@ -7,7 +7,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "departments")
-public class Department extends BaseModel{
+public class Department extends BaseModel {
     @Column(nullable = false, unique = true)
     private String name;
 
