@@ -67,7 +67,7 @@ public class IssueController {
         } else if (List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole())
            || (List.of(issue.getUser().getUuid(), issue.getHandler().getUuid()).contains(user.getUuid())))
             return ResponseEntity.ok(IssueResponseDTO.from(issue));
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @PutMapping("/{id}")
@@ -98,7 +98,7 @@ public class IssueController {
             issueRepository.save(issue);
             return ResponseEntity.ok(IssueResponseDTO.from(issue));
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @PutMapping("/{id}/submit")
@@ -113,7 +113,7 @@ public class IssueController {
             issueRepository.save(issue);
             return ResponseEntity.ok(IssueResponseDTO.from(issue));
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @PutMapping("/{id}/archive")
@@ -129,7 +129,7 @@ public class IssueController {
             issueRepository.save(issue);
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @PutMapping("/{id}/unarchive")
@@ -145,7 +145,7 @@ public class IssueController {
             issueRepository.save(issue);
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @PutMapping("/{id}/assign")
@@ -164,7 +164,7 @@ public class IssueController {
             issueRepository.save(issue);
             return ResponseEntity.ok(IssueResponseDTO.from(issue));
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @DeleteMapping("/{id}")
@@ -179,6 +179,6 @@ public class IssueController {
             issueRepository.delete(issue);
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 }

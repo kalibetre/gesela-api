@@ -83,7 +83,7 @@ public class EmployeeController {
                     .toList();
             return ResponseEntity.ok(Converter.convertList(employees, EmployeeResponseDTO::from));
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @GetMapping("/{id}")
@@ -95,7 +95,7 @@ public class EmployeeController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee with the specified id not found");
             return ResponseEntity.ok(EmployeeResponseDTO.from(employee));
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @PutMapping("/{id}")
@@ -104,7 +104,7 @@ public class EmployeeController {
         if (user != null && user.getRole() == UserRole.ADMIN) {
             Employee existingEmployee = employeeRepository.findById(id).orElse(null);
             if (existingEmployee == null)
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee with the specified id not found");
 
             if (employee.getHireDate() != null)
                 existingEmployee.setHireDate(employee.getHireDate());
@@ -124,7 +124,7 @@ public class EmployeeController {
             EmployeeResponseDTO responseDTO = EmployeeResponseDTO.from(existingEmployee);
             return ResponseEntity.ok(responseDTO);
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @DeleteMapping("/{id}")
@@ -133,8 +133,9 @@ public class EmployeeController {
         if (user != null && user.getRole() == UserRole.ADMIN) {
             Employee employee = employeeRepository.findById(id).orElse(null);
             if (employee == null)
-                return ResponseEntity.notFound().build();
-            else if (!employee.getArchived()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee with the specified id not found");
+
+            if (!employee.getArchived()) {
                 try {
                     employeeRepository.delete(employee);
                 } catch (Exception e) {
@@ -144,6 +145,6 @@ public class EmployeeController {
             }
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 }
