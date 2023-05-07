@@ -5,9 +5,9 @@ import com.geselaapi.model.Employee;
 import java.util.UUID;
 
 public class EmployeeResponseDTO {
-    public UUID uuid;
-    public String department;
-    public UserResponseDTO userAccount;
+    private UUID uuid;
+    private String department;
+    private UserResponseDTO userAccount;
 
     public static EmployeeResponseDTO from(Employee employee) {
         EmployeeResponseDTO responseDTO = new EmployeeResponseDTO();
