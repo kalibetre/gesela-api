@@ -30,8 +30,8 @@ public class CustomerController {
         this.userService = userService;
     }
 
-    @GetMapping("")
-    public ResponseEntity<?> getCustomers(@PathVariable UUID id) {
+    @GetMapping()
+    public ResponseEntity<?> getCustomers() {
         User user = userService.getAuthenticatedUser();
         if (user != null && user.getRole() != UserRole.DEFAULT) {
             List<Customer> customers = customerRepository.findAll();
