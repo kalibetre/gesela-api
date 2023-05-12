@@ -1,5 +1,6 @@
 package com.geselaapi.service;
 
+import com.geselaapi.dto.UserResponseDTO;
 import com.geselaapi.model.AuthRequest;
 import com.geselaapi.model.AuthResponse;
 import com.geselaapi.dto.UserRequestDTO;
@@ -34,7 +35,7 @@ public class AuthService {
         user.setRole(UserRole.DEFAULT);
         userRepository.save(user);
         String jwtToken = jwtService.generateToken(user.getUuid());
-        return new AuthResponse(jwtToken);
+        return new AuthResponse(jwtToken, UserResponseDTO.from(user));
     }
 
     public AuthResponse login(AuthRequest request) {
@@ -44,7 +45,7 @@ public class AuthService {
         ));
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
         String jwtToken = jwtService.generateToken(user.getUuid());
-        return new AuthResponse(jwtToken);
+        return new AuthResponse(jwtToken, UserResponseDTO.from(user));
     }
 
     public void changePassword(String email, String password) {
