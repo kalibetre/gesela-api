@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/issues")
+@RequestMapping("/api/v1/issues")
 @SecurityRequirement(name = "gesela-api")
 public class IssueController {
     private final IssueRepository issueRepository;

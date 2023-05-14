@@ -22,7 +22,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/employees")
+@RequestMapping("/api/v1/employees")
 @SecurityRequirement(name = "gesela-api")
 public class EmployeeController {
     private final EmployeeRepository employeeRepository;

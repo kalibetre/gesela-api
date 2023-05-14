@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/customers")
+@RequestMapping("/api/v1/customers")
 @SecurityRequirement(name = "gesela-api")
 public class CustomerController {
     private final CustomerRepository customerRepository;
