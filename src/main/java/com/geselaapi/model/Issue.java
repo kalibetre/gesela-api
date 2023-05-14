@@ -21,9 +21,6 @@ public class Issue extends BaseModel{
 
     private LocalDateTime createdDate;
 
-    @Column(nullable = false)
-    private Boolean isArchived;
-
     @ManyToOne
     private User user;
 
@@ -40,7 +37,6 @@ public class Issue extends BaseModel{
 
     public Issue() {
         this.status = IssueStatus.DRAFT;
-        this.isArchived = false;
     }
 
     public String getTitle() {
@@ -73,14 +69,6 @@ public class Issue extends BaseModel{
 
     public void setCreatedDate(LocalDateTime createdDate) {
         this.createdDate = createdDate;
-    }
-
-    public Boolean getArchived() {
-        return isArchived;
-    }
-
-    public void setArchived(Boolean archived) {
-        isArchived = archived;
     }
 
     public List<Notification> getNotifications() {
