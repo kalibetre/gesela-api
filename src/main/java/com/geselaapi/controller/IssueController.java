@@ -46,6 +46,9 @@ public class IssueController {
     @GetMapping
     public ResponseEntity<List<IssueResponseDTO>> getIssues() {
         User user = userService.getAuthenticatedUser();
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
         if (user.getRole() == UserRole.DEFAULT) {
             return ResponseEntity.ok(Converter.convertList(issueRepository.findByUser(user), IssueResponseDTO::from));
         }
@@ -92,75 +95,38 @@ public class IssueController {
                 issue.setTitle(issueUpdate.getTitle());
             if (issueUpdate.getDescription() != null)
                 issue.setDescription(issueUpdate.getDescription());
-            if (issueUpdate.getStatus() != null)
-                issue.setStatus(issueUpdate.getStatus());
+            if (issueUpdate.getStatus() != null) {
+                if (user.getRole() == UserRole.DEFAULT) {
+                    if (issueUpdate.getStatus() == IssueStatus.SUBMITTED) {
+                        if (issue.getUser().getUuid() == user.getUuid()) {
+                            issue.setStatus(issueUpdate.getStatus());
+                        } else {
+                            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                        }
+                    } else {
+                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                    }
+                } else if (issue.getStatus() == IssueStatus.ARCHIVED) {
+                    if (List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole())) {
+                        issue.setStatus(issueUpdate.getStatus());
+                    } else {
+                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                    }
+                } else {
+                    issue.setStatus(issueUpdate.getStatus());
+                }
+            }
+            if (issueUpdate.getHandlerId() != null) {
+                if (List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole())) {
+                    Employee handler = employeeRepository.findById(issueUpdate.getHandlerId()).orElse(null);
+                    if (handler == null)
+                        return ResponseEntity.badRequest().build();
+                    issue.setHandler(handler);
+                } else {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                }
+            }
 
-            issueRepository.save(issue);
-            return ResponseEntity.ok(IssueResponseDTO.from(issue));
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-
-    @PutMapping("/{id}/submit")
-    public ResponseEntity<?> submitIssue(@PathVariable UUID id) {
-        User user = userService.getAuthenticatedUser();
-        Issue issue = issueRepository.findById(id).orElse(null);
-        if (issue == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Issue with the specified id not found");
-        } else if (issue.getUser().getUuid() == user.getUuid() || user.getRole() == UserRole.ADMIN)
-        {
-            issue.setStatus(IssueStatus.PENDING);
-            issueRepository.save(issue);
-            return ResponseEntity.ok(IssueResponseDTO.from(issue));
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-
-    @PutMapping("/{id}/archive")
-    public ResponseEntity<?> archiveIssue(@PathVariable UUID id) {
-        User user = userService.getAuthenticatedUser();
-        Issue issue = issueRepository.findById(id).orElse(null);
-
-        if (issue == null)
-            return ResponseEntity.notFound().build();
-        else if (List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole()))
-        {
-            issue.setArchived(true);
-            issueRepository.save(issue);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-
-    @PutMapping("/{id}/unarchive")
-    public ResponseEntity<?> unarchiveIssue(@PathVariable UUID id) {
-        User user = userService.getAuthenticatedUser();
-        Issue issue = issueRepository.findById(id).orElse(null);
-
-        if (issue == null)
-            return ResponseEntity.notFound().build();
-        else if (List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole()))
-        {
-            issue.setArchived(false);
-            issueRepository.save(issue);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-
-    @PutMapping("/{id}/assign")
-    public ResponseEntity<IssueResponseDTO> assignIssue(@PathVariable UUID id, @RequestBody UUID employeeId) {
-        User user = userService.getAuthenticatedUser();
-        Issue issue = issueRepository.findById(id).orElse(null);
-        Employee handler = employeeRepository.findById(employeeId).orElse(null);
-
-        if (issue == null)
-            return ResponseEntity.notFound().build();
-        else if (handler == null)
-            return ResponseEntity.badRequest().build();
-        else if (List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole()))
-        {
-            issue.setHandler(handler);
             issueRepository.save(issue);
             return ResponseEntity.ok(IssueResponseDTO.from(issue));
         }
@@ -174,10 +140,22 @@ public class IssueController {
 
         if (issue == null)
             return ResponseEntity.notFound().build();
-        else if (List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole()))
-        {
-            issueRepository.delete(issue);
-            return ResponseEntity.noContent().build();
+        else {
+            try {
+                if (issue.getUser().getUuid() == user.getUuid()
+                        || List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole())) {
+                    if (issue.getStatus() != IssueStatus.ARCHIVED) {
+                        issue.setStatus(IssueStatus.ARCHIVED);
+                        issueRepository.save(issue);
+                    }
+                    else {
+                        issueRepository.delete(issue);
+                    }
+                    return ResponseEntity.noContent().build();
+                }
+            } catch (NullPointerException e) {
+                return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("Unable to delete issue");
+            }
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
