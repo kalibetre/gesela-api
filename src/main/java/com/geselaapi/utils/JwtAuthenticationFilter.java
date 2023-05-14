@@ -43,22 +43,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         jwt = authHeader.substring(7);
-        userUuid = jwtService.extractUserUuid(jwt);
 
-        if (userUuid != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            User user = userRepository.findById(UUID.fromString(userUuid)).orElse(null);
-            if (user != null && jwtService.isTokenValid(jwt, user.getUuid())) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        user,
-                        null,
-                        user.getAuthorities()
-                );
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+        try {
+            userUuid = jwtService.extractUserUuid(jwt);
+
+            if (userUuid != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                User user = userRepository.findById(UUID.fromString(userUuid)).orElse(null);
+                if (user != null && jwtService.isTokenValid(jwt, user.getUuid())) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            user,
+                            null,
+                            user.getAuthorities()
+                    );
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+            filterChain.doFilter(request, response);
+        } catch (Exception e) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized access");
         }
-        filterChain.doFilter(request, response);
     }
 }
