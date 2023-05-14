@@ -2,10 +2,13 @@ package com.geselaapi.dto;
 
 import com.geselaapi.model.IssueStatus;
 
+import java.util.UUID;
+
 public class IssueUpdateDTO {
     private String title;
     private String description;
     private IssueStatus status;
+    private UUID handlerId;
 
     public String getTitle() {
         return title;
@@ -29,5 +32,13 @@ public class IssueUpdateDTO {
 
     public void setStatus(IssueStatus status) {
         this.status = status;
+    }
+
+    public UUID getHandlerId() {
+        return handlerId;
+    }
+
+    public void setHandlerId(UUID handlerId) {
+        this.handlerId = handlerId;
     }
 }
