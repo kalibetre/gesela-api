@@ -77,7 +77,7 @@ public class DepartmentController {
                 existingDepartment.setName(department.getName());
 
             if (department.getDescription() != null)
-                existingDepartment.setName(department.getDescription());
+                existingDepartment.setDescription(department.getDescription());
 
             departmentRepository.save(existingDepartment);
             return ResponseEntity.ok(DepartmentResponseDTO.from(existingDepartment));
