@@ -4,16 +4,18 @@ import com.geselaapi.model.Employee;
 
 import java.util.UUID;
 
-public class EmployeeResponseDTO {
+public class EmployeeResponseDTO extends UserResponseDTO {
     private UUID uuid;
-    private String department;
-    private UserResponseDTO userAccount;
+    private DepartmentResponseDTO department;
 
     public static EmployeeResponseDTO from(Employee employee) {
         EmployeeResponseDTO responseDTO = new EmployeeResponseDTO();
         responseDTO.setUuid(employee.getUuid());
-        responseDTO.setDepartment(employee.getDepartment().getName());
-        responseDTO.setUserAccount(UserResponseDTO.from(employee.getUserAccount()));
+        responseDTO.setDepartment(DepartmentResponseDTO.from(employee.getDepartment()));
+        responseDTO.setName(employee.getUserAccount().getName());
+        responseDTO.setEmail(employee.getUserAccount().getEmail());
+        responseDTO.setPhone(employee.getUserAccount().getPhone());
+        responseDTO.setRole(employee.getUserAccount().getRole());
         return responseDTO;
     }
 
@@ -25,19 +27,11 @@ public class EmployeeResponseDTO {
         this.uuid = uuid;
     }
 
-    public String getDepartment() {
+    public DepartmentResponseDTO getDepartment() {
         return department;
     }
 
-    public void setDepartment(String department) {
+    public void setDepartment(DepartmentResponseDTO department) {
         this.department = department;
-    }
-
-    public UserResponseDTO getUserAccount() {
-        return userAccount;
-    }
-
-    public void setUserAccount(UserResponseDTO userAccount) {
-        this.userAccount = userAccount;
     }
 }
