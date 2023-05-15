@@ -60,8 +60,13 @@ public class CustomerController {
             if (existingCustomer == null)
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer with the specified id not found");
 
-            if (customer.getAccountStatus() != null)
-                existingCustomer.setAccountStatus(customer.getAccountStatus());
+            User existingUser = existingCustomer.getUserAccount();
+            if (customer.getName() != null)
+                existingUser.setName(customer.getName());
+            if (customer.getEmail() != null)
+                existingUser.setEmail(customer.getEmail());
+            if (customer.getPhone() != null)
+                existingUser.setPhone(customer.getPhone());
 
             customerRepository.save(existingCustomer);
             return ResponseEntity.ok(CustomerResponseDTO.from(existingCustomer));
