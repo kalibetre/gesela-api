@@ -1,9 +1,13 @@
 package com.geselaapi.dto;
 
+import com.geselaapi.model.AccountStatus;
+
 public class CustomerUpdateDTO {
     private String name;
     private String email;
     private String phone;
+
+    private AccountStatus accountStatus;
 
     public String getName() {
         return name;
@@ -27,5 +31,13 @@ public class CustomerUpdateDTO {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public AccountStatus getAccountStatus() {
+        return accountStatus;
+    }
+
+    public void setAccountStatus(AccountStatus accountStatus) {
+        this.accountStatus = accountStatus;
     }
 }
