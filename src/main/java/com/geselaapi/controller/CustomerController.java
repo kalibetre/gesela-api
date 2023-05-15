@@ -76,7 +76,7 @@ public class CustomerController {
     @PutMapping("/{id}/block")
     public ResponseEntity<?> blockCustomer(@PathVariable UUID id) {
         User user = userService.getAuthenticatedUser();
-        if (user != null && (user.getUuid() == id || user.getRole() == UserRole.ADMIN)) {
+        if (user != null && user.getRole() == UserRole.ADMIN) {
             Customer customer = customerRepository.findById(id).orElse(null);
             if (customer == null)
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer with the specified id not found");
