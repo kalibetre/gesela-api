@@ -10,7 +10,6 @@ import com.geselaapi.repository.CustomerRepository;
 import com.geselaapi.service.UserService;
 import com.geselaapi.utils.Converter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -53,7 +52,7 @@ public class CustomerController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateCustomer(@PathVariable UUID id, @Valid @RequestBody CustomerUpdateDTO customer) {
+    public ResponseEntity<?> updateCustomer(@PathVariable UUID id, @RequestBody CustomerUpdateDTO customer) {
         User user = userService.getAuthenticatedUser();
         if (user != null && (user.getUuid() == id || user.getRole() == UserRole.ADMIN)) {
             Customer existingCustomer = customerRepository.findById(id).orElse(null);
