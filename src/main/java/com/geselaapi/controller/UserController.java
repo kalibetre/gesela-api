@@ -29,6 +29,15 @@ public class UserController {
         return ResponseEntity.ok(UserResponseDTO.from(user));
     }
 
+    @GetMapping("/roles")
+    public ResponseEntity<?> getUserRoles() {
+        User user = userService.getAuthenticatedUser();
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        return ResponseEntity.ok(UserRole.values());
+    }
+
     @PutMapping("/profile")
     public ResponseEntity<UserResponseDTO> updateUser(@RequestBody UserUpdateDTO userUpdate) {
         User user = userService.getAuthenticatedUser();
