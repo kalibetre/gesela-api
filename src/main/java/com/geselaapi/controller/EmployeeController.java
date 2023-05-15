@@ -151,6 +151,9 @@ public class EmployeeController {
 
             if (!employee.getArchived()) {
                 try {
+                    Department dept = employee.getDepartment();
+                    dept.getEmployees().remove(employee);
+                    departmentRepository.save(dept);
                     employeeRepository.delete(employee);
                 } catch (Exception e) {
                     employee.setArchived(true);
