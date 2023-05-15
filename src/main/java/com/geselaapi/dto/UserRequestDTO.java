@@ -1,15 +1,17 @@
 package com.geselaapi.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 public class UserRequestDTO {
-    @NotBlank
+    @NotBlank(message = "Name is mandatory")
     private String name;
-    @NotBlank
+    @Email(message = "Invalid Email")
+    @NotBlank(message = "Email is mandatory")
     private String email;
-    @NotBlank
+    @NotBlank(message = "Phone is mandatory")
     private String phone;
-    @NotBlank
+    @NotBlank(message = "Password is mandatory")
     private String password;
 
     public String getName() {
