@@ -2,6 +2,7 @@ package com.geselaapi.dto;
 
 import com.geselaapi.model.Employee;
 import com.geselaapi.model.User;
+import com.geselaapi.model.UserRole;
 
 import java.util.UUID;
 
@@ -11,12 +12,15 @@ public class UserResponseDTO {
     private String email;
     private String phone;
 
+    private UserRole role;
+
     public static UserResponseDTO from(User user){
         UserResponseDTO responseDTO = new UserResponseDTO();
         responseDTO.setUuid(user.getUuid());
         responseDTO.setName(user.getName());
         responseDTO.setEmail(user.getEmail());
         responseDTO.setPhone(user.getPhone());
+        responseDTO.setRole(user.getRole());
         return responseDTO;
     }
 
@@ -56,4 +60,11 @@ public class UserResponseDTO {
         this.phone = phone;
     }
 
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
+    }
 }
