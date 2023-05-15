@@ -2,7 +2,6 @@ package com.geselaapi.model;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,9 +10,6 @@ import java.util.List;
 public class Employee extends  BaseModel {
     @ManyToOne
     private Department department;
-
-    @Column(nullable = false)
-    private LocalDate hireDate;
 
     @Column(nullable = false)
     private Boolean isArchived;
@@ -35,14 +31,6 @@ public class Employee extends  BaseModel {
 
     public void setDepartment(Department department) {
         this.department = department;
-    }
-
-    public LocalDate getHireDate() {
-        return hireDate;
-    }
-
-    public void setHireDate(LocalDate hireDate) {
-        this.hireDate = hireDate;
     }
 
     public Boolean getArchived() {
