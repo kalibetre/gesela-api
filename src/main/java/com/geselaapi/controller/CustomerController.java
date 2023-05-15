@@ -67,26 +67,11 @@ public class CustomerController {
             if (customer.getPhone() != null)
                 existingUser.setPhone(customer.getPhone());
 
+            if (customer.getAccountStatus() != null && user.getRole() == UserRole.ADMIN)
+                existingCustomer.setAccountStatus(customer.getAccountStatus());
+
             customerRepository.save(existingCustomer);
             return ResponseEntity.ok(CustomerResponseDTO.from(existingCustomer));
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-
-    @PutMapping("/{id}/block")
-    public ResponseEntity<?> blockCustomer(@PathVariable UUID id) {
-        User user = userService.getAuthenticatedUser();
-        if (user != null && user.getRole() == UserRole.ADMIN) {
-            Customer customer = customerRepository.findById(id).orElse(null);
-            if (customer == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer with the specified id not found");
-
-            if (customer.getAccountStatus() == AccountStatus.ARCHIVED)
-                return ResponseEntity.badRequest().body("Customer is archived");
-
-            customer.setAccountStatus(AccountStatus.BLOCKED);
-            customerRepository.save(customer);
-            return ResponseEntity.noContent().build();
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
