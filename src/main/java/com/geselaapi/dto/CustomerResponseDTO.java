@@ -5,15 +5,17 @@ import com.geselaapi.model.Customer;
 
 import java.util.UUID;
 
-public class CustomerResponseDTO {
+public class CustomerResponseDTO extends UserResponseDTO {
     private UUID uuid;
     private AccountStatus accountStatus;
-    private UserResponseDTO userAccount;
 
     public static CustomerResponseDTO from(Customer customer) {
         CustomerResponseDTO responseDTO = new CustomerResponseDTO();
         responseDTO.setUuid(customer.getUuid());
-        responseDTO.setUserAccount(UserResponseDTO.from(customer.getUserAccount()));
+        responseDTO.setName(customer.getUserAccount().getName());
+        responseDTO.setEmail(customer.getUserAccount().getEmail());
+        responseDTO.setPhone(customer.getUserAccount().getPhone());
+        responseDTO.setAccountStatus(customer.getAccountStatus());
         return responseDTO;
     }
 
@@ -33,11 +35,4 @@ public class CustomerResponseDTO {
         this.accountStatus = accountStatus;
     }
 
-    public UserResponseDTO getUserAccount() {
-        return userAccount;
-    }
-
-    public void setUserAccount(UserResponseDTO userAccount) {
-        this.userAccount = userAccount;
-    }
 }
