@@ -1,6 +1,6 @@
 package com.geselaapi.controller;
 
-import com.geselaapi.dto.EmployeeRequestDTO;
+import com.geselaapi.dto.NewEmployeeRequestDTO;
 import com.geselaapi.dto.EmployeeResponseDTO;
 import com.geselaapi.dto.EmployeeUpdateDTO;
 import com.geselaapi.dto.UserRequestDTO;
@@ -11,6 +11,7 @@ import com.geselaapi.repository.UserRepository;
 import com.geselaapi.service.AuthService;
 import com.geselaapi.service.UserService;
 import com.geselaapi.utils.Converter;
+import com.geselaapi.utils.ValidationError;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @RestController
@@ -42,9 +42,15 @@ public class EmployeeController {
     }
 
     @PostMapping()
-    public ResponseEntity<?> addEmployee(@Valid @RequestBody EmployeeRequestDTO employee) {
+    public ResponseEntity<?> addEmployee(@Valid @RequestBody NewEmployeeRequestDTO employee) {
         User user = userService.getAuthenticatedUser();
         if (user != null && user.getRole() == UserRole.ADMIN) {
+            User existingUser = userService.getUserByEmail(employee.getEmail());
+            if (existingUser != null) {
+                ValidationError validationError = new ValidationError("Validation", List.of("Email address already in use"));
+                return ResponseEntity.badRequest().body(validationError);
+            }
+
             UserRequestDTO userRequestDTO = new UserRequestDTO();
             userRequestDTO.setName(employee.getName());
             userRequestDTO.setEmail(employee.getEmail());
@@ -53,7 +59,7 @@ public class EmployeeController {
             authService.register(userRequestDTO);
 
             User newUser = userRepository.findByEmail(employee.getEmail()).orElse(null);
-            Department dept = departmentRepository.findByName(employee.getDepartment()).orElse(null);
+            Department dept = departmentRepository.findById(employee.getDepartmentUuid()).orElse(null);
             if (newUser == null || dept == null)
                 return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
 
@@ -61,8 +67,6 @@ public class EmployeeController {
             Employee newEmployee = new Employee();
             newEmployee.setUserAccount(newUser);
             newEmployee.setDepartment(dept);
-            newEmployee.setHireDate(employee.getHireDate());
-
             dept.getEmployees().add(newEmployee);
             departmentRepository.save(dept);
 
@@ -106,17 +110,27 @@ public class EmployeeController {
             if (existingEmployee == null)
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee with the specified id not found");
 
-            if (employee.getHireDate() != null)
-                existingEmployee.setHireDate(employee.getHireDate());
+            User empUserAccount = existingEmployee.getUserAccount();
 
-            if (employee.getDepartment() != null &&!Objects.equals(existingEmployee.getDepartment().getName(), employee.getDepartment()))
-            {
-                Department dept = departmentRepository.findByName(employee.getDepartment()).orElse(null);
-                if (dept == null)
+            if (employee.getName() != null)
+                empUserAccount.setName(employee.getName());
+            if (employee.getEmail() != null)
+                empUserAccount.setEmail(employee.getEmail());
+            if (employee.getPhone() != null)
+                empUserAccount.setPhone(employee.getPhone());
+            if (employee.getRole() != null)
+                empUserAccount.setRole(employee.getRole());
+
+            if (employee.getDepartmentUuid() != existingEmployee.getDepartment().getUuid()) {
+                Department oldDept = existingEmployee.getDepartment();
+                Department newDept = departmentRepository.findById(employee.getDepartmentUuid()).orElse(null);
+                if (newDept == null)
                     return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
-                existingEmployee.setDepartment(dept);
-                dept.getEmployees().add(existingEmployee);
-                departmentRepository.save(dept);
+                oldDept.getEmployees().remove(existingEmployee);
+                newDept.getEmployees().add(existingEmployee);
+                existingEmployee.setDepartment(newDept);
+                departmentRepository.save(oldDept);
+                departmentRepository.save(newDept);
             } else {
                 employeeRepository.save(existingEmployee);
             }
@@ -128,7 +142,7 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteEmployee(@PathVariable UUID id, @RequestBody UserRole role) {
+    public ResponseEntity<?> deleteEmployee(@PathVariable UUID id) {
         User user = userService.getAuthenticatedUser();
         if (user != null && user.getRole() == UserRole.ADMIN) {
             Employee employee = employeeRepository.findById(id).orElse(null);
