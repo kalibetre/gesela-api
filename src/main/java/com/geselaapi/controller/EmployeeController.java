@@ -45,9 +45,11 @@ public class EmployeeController {
     public ResponseEntity<?> addEmployee(@Valid @RequestBody NewEmployeeRequestDTO employee) {
         User user = userService.getAuthenticatedUser();
         if (user != null && user.getRole() == UserRole.ADMIN) {
-            User existingUser = userService.getUserByEmail(employee.getEmail());
-            if (existingUser != null) {
-                ValidationError validationError = new ValidationError("Validation", List.of("Email address already in use"));
+            if (userService.checkIfUserExists(employee.getEmail(), employee.getPhone())) {
+                ValidationError validationError = new ValidationError(
+                        "Validation",
+                        List.of("Email address or phone number already in use")
+                );
                 return ResponseEntity.badRequest().body(validationError);
             }
 

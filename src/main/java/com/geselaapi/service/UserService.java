@@ -44,4 +44,10 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
+    public boolean checkIfUserExists(String email, String phone) {
+        User existingUserByEmail = userRepository.findByEmail(email).orElse(null);
+        User existingUserByPhone = userRepository.findByPhone(phone).orElse(null);
+        return existingUserByEmail != null || existingUserByPhone != null;
+    }
+
 }
