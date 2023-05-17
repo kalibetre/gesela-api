@@ -35,10 +35,20 @@ public class IssueController {
 
     @PostMapping
     public ResponseEntity<IssueResponseDTO> createIssue(@Valid @RequestBody IssueRequestDTO issueRequestDTO) {
+        User user = userService.getAuthenticatedUser();
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
         Issue issue = new Issue();
         issue.setTitle(issueRequestDTO.getTitle());
-        issue.setDescription(issueRequestDTO.getDescription());
-        issue.setUser(userService.getAuthenticatedUser());
+
+        String description = issueRequestDTO.getDescription() != null ? issueRequestDTO.getDescription() : "";
+        issue.setDescription(description);
+        issue.setUser(user);
+
+        if (issueRequestDTO.isSubmitted())
+            issue.setStatus(IssueStatus.SUBMITTED);
+
         Issue savedIssue = issueRepository.save(issue);
         return ResponseEntity.ok(IssueResponseDTO.from(savedIssue));
     }
