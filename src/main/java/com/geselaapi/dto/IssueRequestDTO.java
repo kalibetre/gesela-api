@@ -8,6 +8,8 @@ public class IssueRequestDTO {
     private String title;
     private String description;
 
+    private boolean submitted;
+
     public String getTitle() {
         return title;
     }
@@ -22,5 +24,13 @@ public class IssueRequestDTO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean isSubmitted() {
+        return submitted;
+    }
+
+    public void setSubmitted(boolean submitted) {
+        this.submitted = submitted;
     }
 }
