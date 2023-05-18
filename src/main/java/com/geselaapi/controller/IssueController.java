@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -59,47 +60,61 @@ public class IssueController {
         if (user == null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-        if (user.getRole() == UserRole.DEFAULT) {
-            return ResponseEntity.ok(Converter.convertList(issueRepository.findByUser(user), IssueResponseDTO::from));
-        }
-        else if (user.getRole() == UserRole.ISSUE_HANDLER) {
-            var raised = issueRepository.findByUser(user);
+        List<Issue> ownIssues = issueRepository.findByUser(user);
+        if (List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole())) {
+            List<Issue> nonDraftIssues = issueRepository.findAll().stream()
+                    .filter(issue -> issue.getStatus() != IssueStatus.DRAFT)
+                    .toList();
+
+            HashSet<Issue> issues = new HashSet<>(ownIssues);
+            issues.addAll(nonDraftIssues);
+            return ResponseEntity.ok(Converter.convertList(issues.stream().toList(), IssueResponseDTO::from));
+        } else if (user.getRole() == UserRole.ISSUE_HANDLER) {
             var employee = employeeRepository.findByUserAccount(user).orElse(null);
-            raised.addAll(issueRepository.findByHandler(employee));
-            return ResponseEntity.ok(Converter.convertList(raised, IssueResponseDTO::from));
+            List<Issue> handlerIssues = issueRepository.findByHandler(employee);
+
+            HashSet<Issue> issues = new HashSet<>(ownIssues);
+            issues.addAll(handlerIssues);
+            return ResponseEntity.ok(Converter.convertList(issues.stream().toList(), IssueResponseDTO::from));
         }
-        return ResponseEntity.ok(Converter.convertList(issueRepository.findAll(), IssueResponseDTO::from));
+        return ResponseEntity.ok(Converter.convertList(ownIssues, IssueResponseDTO::from));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<IssueResponseDTO> getIssue(@PathVariable UUID id) {
         User user = userService.getAuthenticatedUser();
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
         Issue issue = issueRepository.findById(id).orElse(null);
-        if (issue == null) {
-            return ResponseEntity.notFound().build();
-        } else if (List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole())
-           || (List.of(issue.getUser().getUuid(), issue.getHandler().getUuid()).contains(user.getUuid())))
-            return ResponseEntity.ok(IssueResponseDTO.from(issue));
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        if (issue != null) {
+            boolean isUserOwner =  issue.getUser().getUuid() == user.getUuid();
+            boolean isUserAdminOrHandler = List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole());
+            boolean isUserIssueHandler = user.getRole() == UserRole.ISSUE_HANDLER && issue.getHandler().getUuid() == user.getUuid();
+
+            if (isUserOwner || isUserIssueHandler || (isUserAdminOrHandler && issue.getStatus() != IssueStatus.DRAFT))
+                return ResponseEntity.ok(IssueResponseDTO.from(issue));
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateIssue(@PathVariable UUID id, @Valid @RequestBody IssueUpdateDTO issueUpdate) {
         User user = userService.getAuthenticatedUser();
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
         Issue issue = issueRepository.findById(id).orElse(null);
         if (issue == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Issue with the specified id not found");
         }
 
-        boolean canUpdate = false;
-        if (issue.getStatus() == IssueStatus.DRAFT && issue.getUser().getUuid() == user.getUuid())
-            canUpdate = true;
-        else if (List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole()))
-            canUpdate = true;
-        else if (issue.getHandler().getUuid() == user.getUuid())
-            canUpdate = true;
+        boolean isUserOwner =  issue.getUser().getUuid() == user.getUuid();
+        boolean isUserAdminOrHandler = List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole());
+        boolean isUserIssueHandler = user.getRole() == UserRole.ISSUE_HANDLER && issue.getHandler().getUuid() == user.getUuid();
 
-        if (canUpdate)
+        if ((isUserOwner && issue.getStatus() == IssueStatus.DRAFT) || isUserIssueHandler || (isUserAdminOrHandler && issue.getStatus() != IssueStatus.DRAFT))
         {
             if (issueUpdate.getTitle() != null)
                 issue.setTitle(issueUpdate.getTitle());
@@ -146,27 +161,32 @@ public class IssueController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteIssue(@PathVariable UUID id) {
         User user = userService.getAuthenticatedUser();
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
         Issue issue = issueRepository.findById(id).orElse(null);
 
         if (issue == null)
             return ResponseEntity.notFound().build();
-        else {
+
+        boolean isUserOwner =  issue.getUser().getUuid() == user.getUuid();
+        boolean isUserAdmin = UserRole.ADMIN == user.getRole();
+
+        if ((isUserOwner && issue.getStatus() == IssueStatus.DRAFT) || (isUserAdmin && issue.getStatus() != IssueStatus.DRAFT))
+        {
             try {
-                if (issue.getUser().getUuid() == user.getUuid()
-                        || List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole())) {
-                    if (issue.getStatus() != IssueStatus.ARCHIVED) {
-                        issue.setStatus(IssueStatus.ARCHIVED);
-                        issueRepository.save(issue);
-                    }
-                    else {
-                        issueRepository.delete(issue);
-                    }
-                    return ResponseEntity.noContent().build();
+                if (issue.getStatus() != IssueStatus.ARCHIVED) {
+                    issue.setStatus(IssueStatus.ARCHIVED);
+                    issueRepository.save(issue);
                 }
-            } catch (NullPointerException e) {
+                else {
+                    issueRepository.delete(issue);
+                }
+                return ResponseEntity.noContent().build();
+            } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("Unable to delete issue");
             }
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
     }
 }
