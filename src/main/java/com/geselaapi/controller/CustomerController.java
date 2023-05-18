@@ -32,7 +32,7 @@ public class CustomerController {
     @GetMapping()
     public ResponseEntity<?> getCustomers() {
         User user = userService.getAuthenticatedUser();
-        if (user != null && user.getRole() != UserRole.DEFAULT) {
+        if (user != null && user.getRole() == UserRole.ADMIN) {
             List<Customer> customers = customerRepository.findAll();
             return ResponseEntity.ok(Converter.convertList(customers, CustomerResponseDTO::from));
         }
@@ -42,7 +42,7 @@ public class CustomerController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getCustomer(@PathVariable UUID id) {
         User user = userService.getAuthenticatedUser();
-        if (user != null && (user.getUuid() == id || user.getRole() != UserRole.DEFAULT)) {
+        if (user != null && (user.getUuid() == id || user.getRole() == UserRole.ADMIN)) {
             Customer customer = customerRepository.findById(id).orElse(null);
             if (customer == null)
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer with the specified id not found");
