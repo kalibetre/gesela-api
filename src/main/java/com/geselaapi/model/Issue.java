@@ -30,6 +30,8 @@ public class Issue extends BaseModel{
     @ManyToOne
     private Employee handler;
 
+    private boolean archived;
+
     @PrePersist
     public void prePersist() {
         this.createdDate = LocalDateTime.now();
@@ -89,5 +91,13 @@ public class Issue extends BaseModel{
 
     public void setHandler(Employee handler) {
         this.handler = handler;
+    }
+
+    public boolean isArchived() {
+        return archived;
+    }
+
+    public void setArchived(boolean archived) {
+        this.archived = archived;
     }
 }

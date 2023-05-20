@@ -10,9 +10,9 @@ public class IssueResponseDTO extends IssueRequestDTO {
     private UUID uuid;
     private IssueStatus status;
     private LocalDateTime createdDate;
-    private Boolean isArchived;
     private UserResponseDTO raisedBy;
     private UserResponseDTO handler;
+    private boolean archived;
 
     public static IssueResponseDTO from(Issue issue) {
         IssueResponseDTO responseDTO = new IssueResponseDTO();
@@ -22,6 +22,7 @@ public class IssueResponseDTO extends IssueRequestDTO {
         responseDTO.setStatus(issue.getStatus());
         responseDTO.setCreatedDate(issue.getCreatedDate());
         responseDTO.setRaisedBy(UserResponseDTO.from(issue.getUser()));
+        responseDTO.setArchived(issue.isArchived());
         if (issue.getHandler() != null)
             responseDTO.setHandler(UserResponseDTO.from(issue.getHandler()));
         return responseDTO;
@@ -51,14 +52,6 @@ public class IssueResponseDTO extends IssueRequestDTO {
         this.createdDate = createdDate;
     }
 
-    public Boolean getArchived() {
-        return isArchived;
-    }
-
-    public void setArchived(Boolean archived) {
-        isArchived = archived;
-    }
-
     public UserResponseDTO getRaisedBy() {
         return raisedBy;
     }
@@ -73,5 +66,13 @@ public class IssueResponseDTO extends IssueRequestDTO {
 
     public void setHandler(UserResponseDTO handler) {
         this.handler = handler;
+    }
+
+    public boolean isArchived() {
+        return archived;
+    }
+
+    public void setArchived(boolean archived) {
+        this.archived = archived;
     }
 }

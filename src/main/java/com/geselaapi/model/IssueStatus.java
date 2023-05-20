@@ -5,7 +5,5 @@ public enum IssueStatus {
     SUBMITTED,
     PENDING,
     IN_PROGRESS,
-    COMPLETE,
     CLOSED,
-    ARCHIVED
 }
