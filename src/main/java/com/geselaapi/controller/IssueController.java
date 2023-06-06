@@ -6,6 +6,7 @@ import com.geselaapi.dto.IssueUpdateDTO;
 import com.geselaapi.model.*;
 import com.geselaapi.repository.EmployeeRepository;
 import com.geselaapi.repository.IssueRepository;
+import com.geselaapi.service.NotificationService;
 import com.geselaapi.service.UserService;
 import com.geselaapi.utils.Converter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -24,13 +25,17 @@ import java.util.UUID;
 public class IssueController {
     private final IssueRepository issueRepository;
     private final EmployeeRepository employeeRepository;
+
     private final UserService userService;
+    private final NotificationService notificationService;
 
     public IssueController(IssueRepository issueRepository,
                            EmployeeRepository employeeRepository,
-                           UserService userService) {
+                           UserService userService,
+                           NotificationService notificationService) {
         this.issueRepository = issueRepository;
         this.employeeRepository = employeeRepository;
+        this.notificationService = notificationService;
         this.userService = userService;
     }
 
@@ -51,6 +56,7 @@ public class IssueController {
             issue.setStatus(IssueStatus.SUBMITTED);
 
         Issue savedIssue = issueRepository.save(issue);
+        notificationService.issueCreated(savedIssue, user);
         return ResponseEntity.ok(IssueResponseDTO.from(savedIssue));
     }
 
@@ -121,14 +127,17 @@ public class IssueController {
                 issue.setTitle(issueUpdate.getTitle());
             if (issueUpdate.getDescription() != null)
                 issue.setDescription(issueUpdate.getDescription());
-            if (issueUpdate.getStatus() != null && issueUpdate.getStatus() == IssueStatus.SUBMITTED)
+            if (issueUpdate.getStatus() != null && issueUpdate.getStatus() == IssueStatus.SUBMITTED) {
                 issue.setStatus(issueUpdate.getStatus());
+                notificationService.issueStatusChanged(issue, user);
+            }
             return ResponseEntity.ok(IssueResponseDTO.from(issueRepository.save(issue)));
         }
 
         if (isUserIssueHandler && !isDraft) {
             if (issueUpdate.getStatus() != null && List.of(IssueStatus.PENDING, IssueStatus.IN_PROGRESS, IssueStatus.CLOSED).contains(issueUpdate.getStatus())) {
                 issue.setStatus(issueUpdate.getStatus());
+                notificationService.issueStatusChanged(issue, user);
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid status");
             }
@@ -140,6 +149,7 @@ public class IssueController {
                 Employee handler = employeeRepository.findById(issueUpdate.getHandlerId()).orElse(null);
                 if (handler != null) {
                     issue.setHandler(handler);
+                    notificationService.issueAssigned(issue, user);
                 } else {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid handler id");
                 }
@@ -192,6 +202,7 @@ public class IssueController {
         {
             issue.setArchived(true);
             issueRepository.save(issue);
+            notificationService.issueArchived(issue, user);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
         return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
@@ -214,6 +225,7 @@ public class IssueController {
         {
             issue.setArchived(false);
             issueRepository.save(issue);
+            notificationService.issueUnArchived(issue, user);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
         return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
