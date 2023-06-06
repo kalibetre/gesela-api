@@ -149,6 +149,7 @@ public class IssueController {
                 Employee handler = employeeRepository.findById(issueUpdate.getHandlerId()).orElse(null);
                 if (handler != null) {
                     issue.setHandler(handler);
+                    issue.setStatus(IssueStatus.PENDING);
                     notificationService.issueAssigned(issue, user);
                 } else {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid handler id");
