@@ -23,6 +23,8 @@ public class Notification extends BaseModel{
 
     private LocalDateTime timeStamp;
 
+    private boolean seen = false;
+
     @PrePersist
     public void prePersist() {
         this.timeStamp = LocalDateTime.now();
@@ -66,5 +68,13 @@ public class Notification extends BaseModel{
 
     public void setTimeStamp(LocalDateTime timeStamp) {
         this.timeStamp = timeStamp;
+    }
+
+    public boolean isSeen() {
+        return seen;
+    }
+
+    public void setSeen(boolean seen) {
+        this.seen = seen;
     }
 }
