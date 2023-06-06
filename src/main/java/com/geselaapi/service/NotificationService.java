@@ -7,6 +7,7 @@ import com.geselaapi.repository.NotificationRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class NotificationService {
@@ -62,7 +63,11 @@ public class NotificationService {
         issue.getNotifications().add(notification);
     }
 
-    public List<Notification> getByIssue(Issue issue, User user) {
-        return notificationRepository.findByIssue(issue);
+    public Notification getById(UUID id) {
+        return notificationRepository.findById(id).orElse(null);
+    }
+
+    public List<Notification> getReceivedNotifications(User user) {
+        return notificationRepository.findByToUser(user);
     }
 }
