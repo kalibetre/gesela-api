@@ -4,7 +4,9 @@ import com.geselaapi.model.Issue;
 import com.geselaapi.model.IssueStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class IssueResponseDTO extends IssueRequestDTO {
     private UUID uuid;
@@ -13,6 +15,8 @@ public class IssueResponseDTO extends IssueRequestDTO {
     private UserResponseDTO raisedBy;
     private UserResponseDTO handler;
     private boolean archived;
+
+    private List<NotificationsDTO> notifications;
 
     public static IssueResponseDTO from(Issue issue) {
         IssueResponseDTO responseDTO = new IssueResponseDTO();
@@ -25,6 +29,7 @@ public class IssueResponseDTO extends IssueRequestDTO {
         responseDTO.setArchived(issue.isArchived());
         if (issue.getHandler() != null)
             responseDTO.setHandler(UserResponseDTO.from(issue.getHandler()));
+        responseDTO.notifications = issue.getNotifications().stream().map(NotificationsDTO::from).collect(Collectors.toList());
         return responseDTO;
     }
 
@@ -74,5 +79,9 @@ public class IssueResponseDTO extends IssueRequestDTO {
 
     public void setArchived(boolean archived) {
         this.archived = archived;
+    }
+
+    public List<NotificationsDTO> getNotifications() {
+        return notifications;
     }
 }
