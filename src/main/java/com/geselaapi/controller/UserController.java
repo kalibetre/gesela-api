@@ -1,23 +1,34 @@
 package com.geselaapi.controller;
 
+import com.geselaapi.dto.NotificationsDTO;
 import com.geselaapi.dto.UserResponseDTO;
 import com.geselaapi.dto.UserUpdateDTO;
+import com.geselaapi.model.Issue;
+import com.geselaapi.model.Notification;
 import com.geselaapi.model.User;
 import com.geselaapi.model.UserRole;
+import com.geselaapi.repository.IssueRepository;
+import com.geselaapi.service.NotificationService;
 import com.geselaapi.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {
     private final UserService userService;
+    private final NotificationService notificationService;
+    private final IssueRepository issueRepository;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, NotificationService notificationService,
+                          IssueRepository issueRepository) {
         this.userService = userService;
+        this.notificationService = notificationService;
+        this.issueRepository = issueRepository;
     }
 
     @GetMapping("/profile")
@@ -93,5 +104,37 @@ public class UserController {
         userToUpdate.setRole(role);
         userService.save(userToUpdate);
         return ResponseEntity.ok(UserResponseDTO.from(userToUpdate));
+    }
+
+    @GetMapping("/notifications")
+    public ResponseEntity<List<NotificationsDTO>> getNotifications() {
+        User user = userService.getAuthenticatedUser();
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        List<Notification> notifications = notificationService.getReceivedNotifications(user);
+        return ResponseEntity.ok(notifications.stream().map(NotificationsDTO::from).toList());
+    }
+
+    @PutMapping("/notifications/{id}/read")
+    public ResponseEntity<?> markAsRead(@PathVariable UUID id) {
+        User user = userService.getAuthenticatedUser();
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        Notification notification = notificationService.getById(id);
+        if (notification == null)
+            return ResponseEntity.notFound().build();
+
+        if (notification.getToUser().getUuid() != user.getUuid())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        Issue issue = notification.getIssue();
+        issue.getNotifications().forEach(n -> {
+            if (n.getToUser().getUuid() == user.getUuid() && notification.getUuid() == n.getUuid())
+                n.setSeen(true);
+        });
+        issueRepository.save(issue);
+        return ResponseEntity.ok().build();
     }
 }
