@@ -3,10 +3,9 @@ package com.geselaapi.controller;
 import com.geselaapi.dto.DepartmentRequestDTO;
 import com.geselaapi.dto.DepartmentResponseDTO;
 import com.geselaapi.dto.DepartmentUpdateDTO;
-import com.geselaapi.model.Department;
-import com.geselaapi.model.User;
-import com.geselaapi.model.UserRole;
+import com.geselaapi.model.*;
 import com.geselaapi.repository.DepartmentRepository;
+import com.geselaapi.repository.IssueRepository;
 import com.geselaapi.service.UserService;
 import com.geselaapi.utils.Converter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -15,8 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/departments")
@@ -24,10 +22,13 @@ import java.util.UUID;
 public class DepartmentController {
     private final DepartmentRepository departmentRepository;
     private final UserService userService;
+    private final IssueRepository issueRepository;
 
-    public DepartmentController(DepartmentRepository departmentRepository, UserService userService) {
+    public DepartmentController(DepartmentRepository departmentRepository, UserService userService,
+                                IssueRepository issueRepository) {
         this.departmentRepository = departmentRepository;
         this.userService = userService;
+        this.issueRepository = issueRepository;
     }
 
     @PostMapping()
@@ -100,5 +101,42 @@ public class DepartmentController {
             }
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<?> getDepartmentsStats() {
+        User user = userService.getAuthenticatedUser();
+        if (user == null || !List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole()))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        List<Department> departments = departmentRepository.findAll();
+        Map<String, Map<String, Integer>> stats = new HashMap<>();
+        for (Department department : departments) {
+            Map<String, Integer> departmentStats = new HashMap<>();
+            departmentStats.put("PENDING", 0);
+            departmentStats.put("IN_PROGRESS", 0);
+            departmentStats.put("CLOSED", 0);
+            stats.put(department.getName(), departmentStats);
+        }
+
+        List<Issue> issues = issueRepository.findAll().stream().filter(issue -> issue.getHandler() != null).toList();
+        for (Issue issue : issues) {
+            Department department = issue.getHandler().getDepartment();
+            Map<String, Integer> departmentStats = stats.get(department.getName());
+
+            switch (issue.getStatus()) {
+                case PENDING:
+                    departmentStats.put("PENDING", departmentStats.get("PENDING") + 1);
+                    break;
+                case IN_PROGRESS:
+                    departmentStats.put("IN_PROGRESS", departmentStats.get("IN_PROGRESS") + 1);
+                    break;
+                case CLOSED:
+                    departmentStats.put("CLOSED", departmentStats.get("CLOSED") + 1);
+                    break;
+            }
+        }
+
+        return ResponseEntity.ok(stats);
     }
 }
