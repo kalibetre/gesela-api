@@ -10,6 +10,4 @@ import java.util.UUID;
 
 public interface NotificationRepository extends JpaRepository<Notification, UUID> {
     List<Notification> findByToUser(User toUser);
-    List<Notification> findByFromUser(User fromUser);
-    List<Notification> findByIssue(Issue issue);
 }
