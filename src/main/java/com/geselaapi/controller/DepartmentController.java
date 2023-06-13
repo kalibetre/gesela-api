@@ -125,15 +125,9 @@ public class DepartmentController {
             Map<String, Integer> departmentStats = stats.get(department.getName());
 
             switch (issue.getStatus()) {
-                case PENDING:
-                    departmentStats.put("PENDING", departmentStats.get("PENDING") + 1);
-                    break;
-                case IN_PROGRESS:
-                    departmentStats.put("IN_PROGRESS", departmentStats.get("IN_PROGRESS") + 1);
-                    break;
-                case CLOSED:
-                    departmentStats.put("CLOSED", departmentStats.get("CLOSED") + 1);
-                    break;
+                case PENDING -> departmentStats.put("PENDING", departmentStats.get("PENDING") + 1);
+                case IN_PROGRESS -> departmentStats.put("IN_PROGRESS", departmentStats.get("IN_PROGRESS") + 1);
+                case CLOSED -> departmentStats.put("CLOSED", departmentStats.get("CLOSED") + 1);
             }
         }
 
