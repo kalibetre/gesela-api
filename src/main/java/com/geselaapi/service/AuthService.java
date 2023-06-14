@@ -48,9 +48,14 @@ public class AuthService {
         return new AuthResponse(jwtToken, UserResponseDTO.from(user));
     }
 
-    public void changePassword(String email, String password) {
+    public boolean changePassword(String email, String oldPassword, String newPassword) throws Exception {
         User user = userRepository.findByEmail(email).orElseThrow();
-        user.setPassword(passwordEncoder.encode(password));
-        userRepository.save(user);
+        if (passwordEncoder.matches(oldPassword, user.getPassword())) {
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+            return true;
+        } else {
+            return false;
+        }
     }
 }
