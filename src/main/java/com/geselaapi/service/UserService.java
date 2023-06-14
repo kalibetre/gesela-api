@@ -40,6 +40,10 @@ public class UserService implements UserDetailsService {
         return userRepository.findByEmail(email).orElse(null);
     }
 
+    public User getUserByPhone(String phone) {
+        return userRepository.findByPhone(phone).orElse(null);
+    }
+
     public void save(User user) {
         userRepository.save(user);
     }
