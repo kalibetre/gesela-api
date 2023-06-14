@@ -4,7 +4,8 @@ public class UserUpdateDTO {
     private String name;
     private String email;
     private String phone;
-    private String password;
+    private String oldPassword;
+    private String newPassword;
 
     public String getName() {
         return name;
@@ -30,12 +31,19 @@ public class UserUpdateDTO {
         this.phone = phone;
     }
 
-    public String getPassword() {
-        return password;
+    public String getOldPassword() {
+        return oldPassword;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setOldPassword(String oldPassword) {
+        this.oldPassword = oldPassword;
     }
 
+    public String getNewPassword() {
+        return newPassword;
+    }
+
+    public void setNewPassword(String newPassword) {
+        this.newPassword = newPassword;
+    }
 }
