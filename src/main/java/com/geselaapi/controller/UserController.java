@@ -8,8 +8,10 @@ import com.geselaapi.model.Notification;
 import com.geselaapi.model.User;
 import com.geselaapi.model.UserRole;
 import com.geselaapi.repository.IssueRepository;
+import com.geselaapi.service.AuthService;
 import com.geselaapi.service.NotificationService;
 import com.geselaapi.service.UserService;
+import com.geselaapi.utils.ValidationError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,12 +25,14 @@ public class UserController {
     private final UserService userService;
     private final NotificationService notificationService;
     private final IssueRepository issueRepository;
+    private final AuthService authService;
 
     public UserController(UserService userService, NotificationService notificationService,
-                          IssueRepository issueRepository) {
+                          IssueRepository issueRepository, AuthService authService) {
         this.userService = userService;
         this.notificationService = notificationService;
         this.issueRepository = issueRepository;
+        this.authService = authService;
     }
 
     @GetMapping("/profile")
@@ -50,41 +54,56 @@ public class UserController {
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<UserResponseDTO> updateUser(@RequestBody UserUpdateDTO userUpdate) {
-        User user = userService.getAuthenticatedUser();
+    public ResponseEntity<?> updateUser(@RequestBody UserUpdateDTO userUpdate) {
         try {
-            if (userUpdate.getName() != null)
-                user.setName(userUpdate.getName());
-            if (userUpdate.getEmail() != null)
-                user.setEmail(userUpdate.getEmail());
-            if (userUpdate.getPhone() != null)
-                user.setPhone(userUpdate.getPhone());
-            userService.save(user);
-            return ResponseEntity.ok(UserResponseDTO.from(user));
+            User user = userService.getAuthenticatedUser();
+            if (user == null ) {
+                return ResponseEntity.notFound().build();
+            }
+            ValidationError errors = userService.updateUserProfile(user.getUuid(), userUpdate);
+            if (errors != null)
+                return ResponseEntity.badRequest().body(errors);
+
+            if (userUpdate.getOldPassword() != null) {
+                if (userUpdate.getNewPassword() == null || userUpdate.getNewPassword().length() < 5)
+                    return ResponseEntity.badRequest().body(new ValidationError(
+                            "Validation",
+                            List.of("Invalid password")
+                    ));
+                else if (!authService.changePassword(
+                        user.getEmail(),
+                        userUpdate.getOldPassword(),
+                        userUpdate.getNewPassword()
+                ))
+                    return ResponseEntity.badRequest().body(new ValidationError(
+                            "Validation",
+                            List.of("Incorrect password or invalid new password")
+                    ));
+            }
+
+            User updatedUser = userService.getUserByUuid(user.getUuid());
+            return ResponseEntity.ok(UserResponseDTO.from(updatedUser));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.badRequest().build();
         }
     }
 
     @PutMapping("/profile/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable UUID id, @RequestBody UserUpdateDTO userUpdate) {
-        User user = userService.getAuthenticatedUser();
-        User userToUpdate = userService.getUserByUuid(id);
+    public ResponseEntity<?> updateUserById(@PathVariable UUID id, @RequestBody UserUpdateDTO userUpdate) {
         try {
+            User user = userService.getAuthenticatedUser();
+            User userToUpdate = userService.getUserByUuid(id);
             if (user == null || userToUpdate == null) {
                 return ResponseEntity.notFound().build();
             } else if (user.getRole() != UserRole.ADMIN) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
-            if (userUpdate.getName() != null)
-                userToUpdate.setName(userUpdate.getName());
-            if (userUpdate.getEmail() != null)
-                userToUpdate.setEmail(userUpdate.getEmail());
-            if (userUpdate.getPhone() != null)
-                userToUpdate.setPhone(userUpdate.getPhone());
-            userService.save(userToUpdate);
-            return ResponseEntity.ok(UserResponseDTO.from(userToUpdate));
+            ValidationError errors = userService.updateUserProfile(userToUpdate.getUuid(), userUpdate);
+            if (errors == null)
+                return ResponseEntity.ok(UserResponseDTO.from(userToUpdate));
+            else
+                return ResponseEntity.badRequest().body(errors);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
@@ -117,7 +136,7 @@ public class UserController {
     }
 
     @PutMapping("/notifications/{id}/read")
-    public ResponseEntity<?> markAsRead(@PathVariable UUID id) {
+    public ResponseEntity<?> markNotificationAsRead(@PathVariable UUID id) {
         User user = userService.getAuthenticatedUser();
         if (user == null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -137,4 +156,5 @@ public class UserController {
         issueRepository.save(issue);
         return ResponseEntity.ok().build();
     }
+
 }
