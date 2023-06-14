@@ -35,7 +35,8 @@ public class AuthController {
     public ResponseEntity<?> register(
             @RequestBody UserRequestDTO request
     ) {
-        if (userService.checkIfUserExists(request.getEmail(),request.getPhone())) {
+        if (userService.getUserByEmail(request.getEmail()) != null
+                || userService.getUserByPhone(request.getPhone()) != null) {
             ValidationError validationError = new ValidationError(
                     "Validation",
                     List.of("Email address or phone number already in use")
@@ -56,7 +57,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> register(
+    public ResponseEntity<AuthResponse> login(
             @RequestBody AuthRequest request
     ) {
         return ResponseEntity.ok(authService.login(request));
