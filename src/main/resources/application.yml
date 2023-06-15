@@ -1,0 +1,14 @@
+management:
+  info:
+    env:
+      enabled: true
+
+info:
+  application:
+    name: gesela-api
+    description: A REST API for Gesela Issue Tracking and Management Web App
+    author: Kalkidan Betre
+    version: '@project.version@'
+spring:
+  profiles:
+    active: dev
