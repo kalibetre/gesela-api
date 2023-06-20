@@ -54,26 +54,18 @@ public class CustomerController {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCustomer(@PathVariable UUID id, @RequestBody CustomerUpdateDTO customer) {
         User user = userService.getAuthenticatedUser();
-        if (user != null && (user.getUuid() == id || user.getRole() == UserRole.ADMIN)) {
-            Customer existingCustomer = customerRepository.findById(id).orElse(null);
-            if (existingCustomer == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer with the specified id not found");
+        if (user == null || user.getRole() != UserRole.ADMIN)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-            User existingUser = existingCustomer.getUserAccount();
-            if (customer.getName() != null)
-                existingUser.setName(customer.getName());
-            if (customer.getEmail() != null)
-                existingUser.setEmail(customer.getEmail());
-            if (customer.getPhone() != null)
-                existingUser.setPhone(customer.getPhone());
+        Customer existingCustomer = customerRepository.findById(id).orElse(null);
+        if (existingCustomer == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer with the specified id not found");
 
-            if (customer.getAccountStatus() != null && user.getRole() == UserRole.ADMIN)
-                existingCustomer.setAccountStatus(customer.getAccountStatus());
+        if (customer.getAccountStatus() != null)
+            existingCustomer.setAccountStatus(customer.getAccountStatus());
 
-            customerRepository.save(existingCustomer);
-            return ResponseEntity.ok(CustomerResponseDTO.from(existingCustomer));
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        customerRepository.save(existingCustomer);
+        return ResponseEntity.ok(CustomerResponseDTO.from(existingCustomer));
     }
 
     @DeleteMapping("/{id}")
