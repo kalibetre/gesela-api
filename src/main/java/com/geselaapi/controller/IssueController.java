@@ -120,6 +120,8 @@ public class IssueController {
         boolean isUserIssueManager = user.getRole() == UserRole.ISSUE_MANAGER;
         boolean isUserIssueHandler = user.getRole() == UserRole.ISSUE_HANDLER && issue.getHandler().getUserAccount().getUuid() == user.getUuid();
         boolean isDraft = issue.getStatus() == IssueStatus.DRAFT;
+        boolean isSubmitted = issue.getStatus() == IssueStatus.SUBMITTED;
+        boolean isPending = issue.getStatus() == IssueStatus.PENDING;
         boolean isComplete = issue.getStatus() == IssueStatus.CLOSED;
 
         if (isUserOwner && (isDraft || isComplete)) {
@@ -144,7 +146,7 @@ public class IssueController {
             return ResponseEntity.ok(IssueResponseDTO.from(issueRepository.save(issue)));
         }
 
-        if (isUserIssueManager && !isDraft) {
+        if (isUserIssueManager && (isSubmitted || isPending)) {
             if (issueUpdate.getHandlerId() != null) {
                 Employee handler = employeeRepository.findById(issueUpdate.getHandlerId()).orElse(null);
                 if (handler != null) {
