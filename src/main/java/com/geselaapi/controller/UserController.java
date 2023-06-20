@@ -3,10 +3,9 @@ package com.geselaapi.controller;
 import com.geselaapi.dto.NotificationsDTO;
 import com.geselaapi.dto.UserResponseDTO;
 import com.geselaapi.dto.UserUpdateDTO;
-import com.geselaapi.model.Issue;
-import com.geselaapi.model.Notification;
-import com.geselaapi.model.User;
-import com.geselaapi.model.UserRole;
+import com.geselaapi.model.*;
+import com.geselaapi.repository.CustomerRepository;
+import com.geselaapi.repository.EmployeeRepository;
 import com.geselaapi.repository.IssueRepository;
 import com.geselaapi.service.AuthService;
 import com.geselaapi.service.NotificationService;
@@ -16,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,13 +23,17 @@ import java.util.UUID;
 @RequestMapping("/api/v1/users")
 public class UserController {
     private final UserService userService;
+    private final EmployeeRepository employeeRepository;
+    private final CustomerRepository customerRepository;
     private final NotificationService notificationService;
     private final IssueRepository issueRepository;
     private final AuthService authService;
 
-    public UserController(UserService userService, NotificationService notificationService,
+    public UserController(UserService userService, EmployeeRepository employeeRepository, CustomerRepository customerRepository, NotificationService notificationService,
                           IssueRepository issueRepository, AuthService authService) {
         this.userService = userService;
+        this.employeeRepository = employeeRepository;
+        this.customerRepository = customerRepository;
         this.notificationService = notificationService;
         this.issueRepository = issueRepository;
         this.authService = authService;
@@ -157,4 +161,28 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/{id}/reset-password")
+    public ResponseEntity<?> resetPassword(@PathVariable UUID id) {
+        try {
+            User user = userService.getAuthenticatedUser();
+            if (user == null || user.getRole() != UserRole.ADMIN)
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+            Customer cus = customerRepository.findById(id).orElse(null);
+            final String result;
+            if (cus == null) {
+                Employee emp = employeeRepository.findById(id).orElse(null);
+                if (emp == null)
+                    return ResponseEntity.notFound().build();
+                else
+                    result = authService.resetPassword(emp.getUserAccount());
+            } else
+                result = authService.resetPassword(cus.getUserAccount());
+            return ResponseEntity.ok(new HashMap<String, String>() {{
+                put("password", result);
+            }});
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
 }

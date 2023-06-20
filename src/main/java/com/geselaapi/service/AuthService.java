@@ -7,6 +7,7 @@ import com.geselaapi.dto.UserRequestDTO;
 import com.geselaapi.model.User;
 import com.geselaapi.model.UserRole;
 import com.geselaapi.repository.UserRepository;
+import com.geselaapi.utils.RandomPasswordGenerator;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -56,6 +57,17 @@ public class AuthService {
             return true;
         } else {
             return false;
+        }
+    }
+
+    public String resetPassword(User user) {
+        try {
+            String newPassword = RandomPasswordGenerator.generate(6);
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+            return newPassword;
+        } catch (Exception e) {
+            return null;
         }
     }
 }
