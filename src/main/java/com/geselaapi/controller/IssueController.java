@@ -96,10 +96,10 @@ public class IssueController {
 
         if (issue != null) {
             boolean isUserOwner =  issue.getUser().getUuid() == user.getUuid();
-            boolean isUserAdminOrHandler = List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole());
+            boolean isUserAdminOrManager = List.of(UserRole.ADMIN, UserRole.ISSUE_MANAGER).contains(user.getRole());
             boolean isUserIssueHandler = user.getRole() == UserRole.ISSUE_HANDLER && issue.getHandler().getUuid() == user.getUuid();
 
-            if (isUserOwner || isUserIssueHandler || (isUserAdminOrHandler && issue.getStatus() != IssueStatus.DRAFT))
+            if (isUserOwner || isUserIssueHandler || (isUserAdminOrManager && issue.getStatus() != IssueStatus.DRAFT))
                 return ResponseEntity.ok(IssueResponseDTO.from(issue));
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
