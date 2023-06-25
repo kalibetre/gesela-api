@@ -7,10 +7,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-      properties:
+    properties:
+      hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
-        show-sql: true
+    show-sql: true
 security:
   jwt:
     token:
